@@ -97,32 +97,55 @@
             text-transform: uppercase;
         }
 
-        /* Desktop Table View Styles */
-        .matrix-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 16px;
-        }
-
-        .matrix-table th, .matrix-table td {
+        /* Matrix Styling */
+        .matrix-row {
+            display: flex;
+            align-items: center;
             padding: 12px;
             border-bottom: 1px solid var(--border-color);
-            text-align: left;
         }
 
-        .matrix-table th {
+        .matrix-row:nth-child(even) {
+            background-color: #fafafa;
+        }
+
+        .matrix-question {
+            flex: 1;
+            padding-right: 16px;
+        }
+
+        .matrix-options {
+            display: flex;
+            gap: 20px;
+            justify-content: flex-end;
+        }
+
+        .matrix-option-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Desktop Header Specifics */
+        .desktop-matrix-header {
+            display: flex;
             background-color: var(--bg-color);
             font-weight: 600;
             color: var(--text-muted);
+            padding: 12px;
+            border-bottom: 2px solid var(--border-color);
         }
 
-        .matrix-table td.radio-cell {
-            text-align: center;
-            width: 60px;
+        .header-spacer {
+            flex: 1;
         }
 
-        .matrix-table tr:nth-child(even) {
-            background-color: #fafafa;
+        .header-options {
+            display: flex;
+            gap: 32px;
+            padding-right: 6px;
         }
 
         input[type="radio"] {
@@ -130,11 +153,6 @@
             height: 20px;
             cursor: pointer;
             accent-color: var(--primary-color);
-        }
-
-        /* Responsive Mobile Layout Elements (Single-Source DOM Solution) */
-        .mobile-header-label {
-            display: none;
         }
 
         textarea {
@@ -165,82 +183,43 @@
 
         button:hover { background-color: var(--primary-dark); }
 
+        /* Clean Mobile Optimization Layer */
         @media (max-width: 650px) {
             .meta-grid { grid-template-columns: 1fr; }
+            .desktop-matrix-header { display: none; }
             
-            /* Transforming Table Layout dynamically into Responsive Mobile Layout Elements */
-            .matrix-table, .matrix-table thead, .matrix-table tbody, .matrix-table th, .matrix-table td, .matrix-table tr { 
-                display: block; 
-            }
-            
-            .matrix-table thead { display: none; }
-            
-            .matrix-table tr {
+            .matrix-row {
+                flex-direction: column;
+                align-items: stretch;
                 background: #fff !important;
                 border: 1px solid var(--border-color);
                 border-radius: 8px;
                 padding: 14px;
                 margin-bottom: 14px;
             }
-            
-            .matrix-table td:first-child {
+
+            .matrix-question {
                 font-weight: 600;
                 margin-bottom: 12px;
                 font-size: 1rem;
-                border: none;
-                padding: 0;
+                padding-right: 0;
             }
-            
-            /* Turning remaining columns into horizontal mobile rows wrapper elements */
-            .matrix-table tr {
-                display: flex;
-                flex-direction: column;
-            }
-            
-            .matrix-table td.radio-cell {
-                display: inline-flex;
-                width: auto;
-                border: none;
-                padding: 0;
-            }
-            
-            /* Generates a clean option row container mimic box pattern */
-            .matrix-table tbody {
-                display: block;
-            }
-            
-            /* Dynamic inline custom alignment container system logic inside table mapping structures */
-            .matrix-table tr {
-                position: relative;
-            }
-            
-            /* Wrapping radio containers */
-            .matrix-table td.radio-cell {
-                display: inline-block;
-                text-align: center;
-                flex: 1;
-            }
-            
-            /* Helper block to render options in responsive flex matrix layout structure cleanly */
-            .matrix-table-row-container {
-                display: flex;
+
+            .matrix-options {
                 justify-content: space-between;
-                align-items: center;
                 background: var(--bg-color);
                 padding: 10px;
                 border-radius: 6px;
-                margin-top: 10px;
+                gap: 0;
             }
-            
-            .mobile-header-label {
-                display: flex;
+
+            .matrix-option-label {
                 flex-direction: column;
-                align-items: center;
                 gap: 4px;
                 font-size: 0.85rem;
                 font-weight: 600;
                 color: var(--text-muted);
-                cursor: pointer;
+                width: 40px;
             }
         }
     </style>
@@ -255,7 +234,6 @@
 
     <form id="evaluationForm">
         
-        <!-- Target Recipient Email Configuration Field -->
         <div class="form-group" style="margin-bottom: 20px;">
             <label for="submissionEmail">Designated Recipient Email:</label>
             <input type="email" id="submissionEmail" value="gelmolatojunior@gmail.com" required>
@@ -284,7 +262,7 @@
             <strong>Rating Scale:</strong> 5 – Outstanding | 4 – Very Satisfactory | 3 – Satisfactory | 2 – Needs Improvement | 1 – Poor
         </div>
 
-        <!-- Dynamic Form Target Container Block -->
+        <!-- Target Container Block -->
         <div id="dynamicSections"></div>
 
         <!-- Section VI: Comments -->
@@ -311,7 +289,6 @@
 </div>
 
 <script>
-    // System Form Parameters Object Array Matrix Schema
     const formSchema = [
         {
             title: "I. Work Performance",
@@ -368,7 +345,6 @@
         }
     ];
 
-    // Standard SPMS Evaluation Scale Conversion Matrix Function
     function getDescriptiveRating(score) {
         if (score === 0) return "Incomplete";
         if (score >= 4.50) return "Outstanding";
@@ -378,64 +354,41 @@
         return "Poor";
     }
 
-    // Set Default Calendar dates to today
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('evalDate').value = today;
     document.getElementById('submissionDate').value = today;
 
     const targetContainer = document.getElementById('dynamicSections');
 
-    // Build Responsive Unified DOM layout elements loop
+    // Build unified responsive HTML structures
     formSchema.forEach(section => {
         let sectionHTML = `<div class="section-title">${section.title}</div>`;
         
-        sectionHTML += `<table class="matrix-table">
-            <thead>
-                <tr>
-                    <th>Evaluation Criteria</th>
-                    <th style="text-align:center">1</th>
-                    <th style="text-align:center">2</th>
-                    <th style="text-align:center">3</th>
-                    <th style="text-align:center">4</th>
-                    <th style="text-align:center">5</th>
-                </tr>
-            </thead>
-            <tbody>`;
+        // Add Header Row for Desktop views
+        sectionHTML += `<div class="desktop-matrix-header">
+            <div class="header-spacer">Evaluation Criteria</div>
+            <div class="header-options">
+                <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+            </div>
+        </div>`;
 
+        // Render Questions
         section.questions.forEach(q => {
-            sectionHTML += `<tr>
-                <td>${q.id}. ${q.text}</td>
-                <td>
-                    <div class="matrix-table-row-container">`;
-                    for(let i=1; i<=5; i++) {
-                        sectionHTML += `<td class="radio-cell">
-                            <label class="mobile-header-label">
-                                <span>${i}</span>
-                                <input type="radio" name="q_${q.id}" value="${i}" data-text="${q.text}" required>
-                            </label>
-                        </td>`;
-                    }
-            sectionHTML += `</div></td></tr>`;
+            sectionHTML += `<div class="matrix-row">
+                <div class="matrix-question">${q.id}. ${q.text}</div>
+                <div class="matrix-options">`;
+                for(let i=1; i<=5; i++) {
+                    sectionHTML += `<label class="matrix-option-label">
+                        <input type="radio" name="q_${q.id}" value="${i}" data-text="${q.text}" required>
+                        <span>${i}</span>
+                    </label>`;
+                }
+            sectionHTML += `</div></div>`;
         });
-        sectionHTML += `</tbody></table>`;
 
         targetContainer.innerHTML += sectionHTML;
     });
 
-    // Fix structural inline tags for rendering correctly on Desktop
-    document.querySelectorAll('.matrix-table-row-container').forEach(el => {
-        if(window.innerWidth > 650) {
-            // Unwrap extra structure nodes natively on load for desktop systems
-            const parentTd = el.parentNode;
-            const tr = parentTd.parentNode;
-            while(el.firstChild) {
-                tr.appendChild(el.firstChild);
-            }
-            parentTd.remove();
-        }
-    });
-
-    // Data parsing structure compiler on Form submission execution
     document.getElementById('evaluationForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -451,7 +404,6 @@
         let totalScoreSum = 0;
         let countedQuestions = 0;
 
-        // Perform calculation dynamically at the moment of submission
         formSchema.forEach(section => {
             section.questions.forEach(q => {
                 const checkedRadio = document.querySelector(`input[name="q_${q.id}"]:checked`);
@@ -466,7 +418,6 @@
         const finalPercentageScore = finalAverageScore > 0 ? ((finalAverageScore / 5) * 100) : 0;
         const finalDescriptiveRating = getDescriptiveRating(finalAverageScore);
 
-        // Build Structured plain-text email string output with ratings written directly in the header
         let trackingBody = `CDRRMO PEER PERFORMANCE EVALUATION REPORT\n`;
         trackingBody += `==================================================\n`;
         trackingBody += `OVERALL SCORE RATING      : ${finalAverageScore.toFixed(2)} / 5.00 (${Math.round(finalPercentageScore)}%)\n`;
@@ -504,7 +455,6 @@
 
         const subjectLine = `Peer Eval [Score: ${finalAverageScore.toFixed(2)} - ${finalDescriptiveRating}] - ${targetEmp}`;
 
-        // Launch user mail client with payload strings
         window.location.href = `mailto:${sendTo}?subject=${encodeURIComponent(subjectLine)}&body=${encodeURIComponent(trackingBody)}`;
     });
 </script>
